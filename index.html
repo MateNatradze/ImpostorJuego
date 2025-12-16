@@ -1,860 +1,1002 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impostor Filósofo - Juego</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 800px;
-            width: 100%;
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        h1 {
-            color: #667eea;
-            margin-bottom: 10px;
-            text-align: center;
-            font-size: 2.5em;
-        }
-
-        .subtitle {
-            color: #666;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 1.1em;
-        }
-
-        .screen {
-            display: none;
-        }
-
-        .screen.active {
-            display: block;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* PANTALLA DE INICIO */
-        .setup-section {
-            margin-bottom: 30px;
-        }
-
-        label {
-            display: block;
-            margin: 15px 0 8px;
-            color: #333;
-            font-weight: 600;
-            font-size: 1.1em;
-        }
-
-        input[type="number"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-
-        input[type="number"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            flex: 1;
-            min-width: 140px;
-            padding: 14px 24px;
-            font-size: 1em;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #764ba2;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #63408a;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
-        }
-
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c0392b;
-            transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background: #27ae60;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #229954;
-            transform: translateY(-2px);
-        }
-
-        /* PANTALLA DE JUGADORES */
-        .players-section {
-            margin: 30px 0;
-        }
-
-        .player-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 10px 0;
-            text-align: center;
-            font-size: 1.3em;
-            font-weight: 600;
-            animation: popIn 0.4s ease-out;
-        }
-
-        @keyframes popIn {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .role-reveal {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            margin: 30px 0;
-            perspective: 1000px;
-            height: 250px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .card-flip {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.3s ease;
-            transform-style: preserve-3d;
-        }
-
-        .role-reveal.flipped .card-flip {
-            transform: rotateY(180deg);
-        }
-
-        .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            backface-visibility: hidden;
-            border-radius: 10px;
-        }
-
-        .card-front {
-            background: white;
-            color: #333;
-            font-size: 1.5em;
-            font-weight: 600;
-        }
-
-        .card-back {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-            transform: rotateY(180deg);
-            padding: 20px;
-        }
-
-        .card-back.impostor {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-        }
-
-        .card-back .role-label {
-            color: white;
-            font-size: 1.1em;
-            margin-bottom: 15px;
-            display: block;
-            font-weight: 600;
-        }
-
-        .card-back .role-content {
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 2.8em;
-            font-weight: bold;
-            letter-spacing: 1px;
-            margin: 0;
-            background: rgba(0, 0, 0, 0.2);
-            display: block;
-        }
-
-        .role-label {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.2em;
-            margin-bottom: 15px;
-        }
-
-        .role-content {
-            background: white;
-            color: #333;
-            padding: 25px;
-            border-radius: 10px;
-            font-size: 2.5em;
-            font-weight: bold;
-            margin: 15px 0;
-            letter-spacing: 2px;
-        }
-
-        .impostor-reveal {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-        }
-
-        .impostor-reveal .role-content {
-            color: #e74c3c;
-            font-size: 3em;
-        }
-
-        .philosopher-reveal {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-        }
-
-        .philosopher-reveal .role-content {
-            color: #3498db;
-        }
-
-        .info-box {
-            background: #f0f0f0;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            color: #555;
-            line-height: 1.6;
-        }
-
-        .timer {
-            font-size: 2em;
-            color: #e74c3c;
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        /* PANTALLA DE VOTACIÓN */
-        .vote-section {
-            margin: 30px 0;
-        }
-
-        .vote-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .vote-btn {
-            padding: 15px;
-            background: #ecf0f1;
-            border: 2px solid #bdc3c7;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .vote-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .vote-btn.selected {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        /* PANTALLA DE RESULTADO */
-        .result-section {
-            text-align: center;
-            padding: 30px;
-        }
-
-        .result-title {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin: 20px 0;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-        }
-
-        .win-message {
-            color: #27ae60;
-            font-size: 1.5em;
-            margin: 20px 0;
-        }
-
-        .loss-message {
-            color: #e74c3c;
-            font-size: 1.5em;
-            margin: 20px 0;
-        }
-
-        .share-section {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-
-        .copy-btn {
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .copied {
-            color: #27ae60;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 1.8em;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            button {
-                min-width: auto;
-            }
-        }
-
-        .error-message {
-            color: #e74c3c;
-            background: #fadbd8;
-            padding: 12px;
-            border-radius: 6px;
-            margin: 10px 0;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .btn-reveal {
-            width: 100%;
-            padding: 16px 24px;
-            margin: 20px 0;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            user-select: none;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
-        }
-
-        .btn-reveal:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
-        }
-
-        .btn-reveal:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(245, 87, 108, 0.3);
-        }
-
-        @keyframes cardAppear {
-            0% {
-                opacity: 0;
-                transform: scale(0.8) rotateX(90deg);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) rotateX(0deg);
-            }
-        }
-
-        .card-flip.new-player {
-            animation: cardAppear 0.6s ease-out;
-        }
-
-        @keyframes playerChange {
-            0% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0;
-            }
-            100% {
-                opacity: 1;
-            }
-        }
-
-        .players-section.change-player {
-            animation: playerChange 0.4s ease-out;
-        }
-    </style>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Impostor Filósofo - Juego</title>
+ <style>
+ * {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+ }
+
+ body {
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+ min-height: 100vh;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ padding: 20px;
+ }
+
+ .container {
+ background: white;
+ border-radius: 20px;
+ box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+ padding: 40px;
+ max-width: 800px;
+ width: 100%;
+ animation: slideIn 0.5s ease-out;
+ }
+
+ @keyframes slideIn {
+ from {
+ opacity: 0;
+ transform: translateY(20px);
+ }
+ to {
+ opacity: 1;
+ transform: translateY(0);
+ }
+ }
+
+ h1 {
+ color: #0e0f0f;
+ margin-bottom: 10px;
+ text-align: center;
+ font-size: 2.5em;
+ }
+
+ .subtitle {
+ color: #0f0f0f;
+ text-align: center;
+ margin-bottom: 30px;
+ font-size: 1.1em;
+ }
+
+ .screen {
+ display: none;
+ }
+
+ .screen.active {
+ display: block;
+ animation: fadeIn 0.3s ease-out;
+ }
+
+ @keyframes fadeIn {
+ from {
+ opacity: 0;
+ }
+ to {
+ opacity: 1;
+ }
+ }
+
+ /* PANTALLA DE INICIO */
+ .setup-section {
+ margin-bottom: 30px;
+ }
+
+ label {
+ display: block;
+ margin: 15px 0 8px;
+ color: #333;
+ font-weight: 600;
+ font-size: 1.1em;
+ }
+
+ input[type="number"] {
+ width: 100%;
+ padding: 12px;
+ border: 2px solid #ddd;
+ border-radius: 8px;
+ font-size: 1em;
+ transition: border-color 0.3s;
+ }
+
+ input[type="number"]:focus {
+ outline: none;
+ border-color: #667eea;
+ }
+
+ .button-group {
+ display: flex;
+ gap: 10px;
+ margin-top: 30px;
+ flex-wrap: wrap;
+ }
+
+ button {
+ flex: 1;
+ min-width: 140px;
+ padding: 14px 24px;
+ font-size: 1em;
+ font-weight: 600;
+ border: none;
+ border-radius: 8px;
+ cursor: pointer;
+ transition: all 0.3s;
+ }
+
+ .btn-primary {
+ background: #667eea;
+ color: white;
+ }
+
+ .btn-primary:hover {
+ background: #5568d3;
+ transform: translateY(-2px);
+ box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+ }
+
+ .btn-secondary {
+ background: #764ba2;
+ color: white;
+ }
+
+ .btn-secondary:hover {
+ background: #63408a;
+ transform: translateY(-2px);
+ box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+ }
+
+ .btn-danger {
+ background: #e74c3c;
+ color: white;
+ }
+
+ .btn-danger:hover {
+ background: #c0392b;
+ transform: translateY(-2px);
+ }
+
+ .btn-success {
+ background: #27ae60;
+ color: white;
+ }
+
+ .btn-success:hover {
+ background: #229954;
+ transform: translateY(-2px);
+ }
+
+ /* PANTALLA DE JUGADORES */
+ .players-section {
+ margin: 30px 0;
+ }
+
+ .player-card {
+ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+ color: white;
+ padding: 20px;
+ border-radius: 12px;
+ margin: 10px 0;
+ text-align: center;
+ font-size: 1.3em;
+ font-weight: 600;
+ animation: popIn 0.4s ease-out;
+ }
+
+ @keyframes popIn {
+ from {
+ opacity: 0;
+ transform: scale(0.8);
+ }
+ to {
+ opacity: 1;
+ transform: scale(1);
+ }
+ }
+
+ .role-reveal {
+ background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+ padding: 30px;
+ border-radius: 15px;
+ text-align: center;
+ margin: 30px 0;
+ perspective: 1000px;
+ height: 250px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ }
+
+ .card-flip {
+ position: relative;
+ width: 100%;
+ height: 100%;
+ transition: transform 0.3s ease;
+ transform-style: preserve-3d;
+ }
+
+ .role-reveal.flipped .card-flip {
+ transform: rotateY(180deg);
+ }
+
+ .card-face {
+ position: absolute;
+ width: 100%;
+ height: 100%;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ backface-visibility: hidden;
+ border-radius: 10px;
+ }
+
+ .card-front {
+ background: white;
+ color: #333;
+ font-size: 1.5em;
+ font-weight: 600;
+ }
+
+ .card-back {
+ background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+ color: white;
+ transform: rotateY(180deg);
+ padding: 20px;
+ }
+
+ .card-back.impostor {
+ background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+ }
+
+ .card-back .role-label {
+ color: white;
+ font-size: 1.1em;
+ margin-bottom: 15px;
+ display: block;
+ font-weight: 600;
+ }
+
+ .card-back .role-content {
+ color: white;
+ padding: 15px;
+ border-radius: 8px;
+ font-size: 2.8em;
+ font-weight: bold;
+ letter-spacing: 1px;
+ margin: 0;
+ background: rgba(0, 0, 0, 0.2);
+ display: block;
+ }
+
+ .role-label {
+ color: rgba(255, 255, 255, 0.9);
+ font-size: 1.2em;
+ margin-bottom: 15px;
+ }
+
+ .role-content {
+ background: white;
+ color: #333;
+ padding: 25px;
+ border-radius: 10px;
+ font-size: 2.5em;
+ font-weight: bold;
+ margin: 15px 0;
+ letter-spacing: 2px;
+ }
+
+ .impostor-reveal {
+ background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+ }
+
+ .impostor-reveal .role-content {
+ color: #e74c3c;
+ font-size: 3em;
+ }
+
+ .philosopher-reveal {
+ background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+ }
+
+ .philosopher-reveal .role-content {
+ color: #3498db;
+ }
+
+ .info-box {
+ background: #f0f0f0;
+ padding: 15px;
+ border-radius: 8px;
+ margin: 20px 0;
+ color: #555;
+ line-height: 1.6;
+ }
+
+ .timer {
+ font-size: 2em;
+ color: #e74c3c;
+ font-weight: bold;
+ text-align: center;
+ margin: 20px 0;
+ }
+
+ /* PANTALLA DE VOTACIÓN */
+ .vote-section {
+ margin: 30px 0;
+ }
+
+ .vote-buttons {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+ gap: 10px;
+ margin: 20px 0;
+ }
+
+ .vote-btn {
+ padding: 15px;
+ background: #ecf0f1;
+ border: 2px solid #bdc3c7;
+ border-radius: 8px;
+ cursor: pointer;
+ font-weight: 600;
+ transition: all 0.3s;
+ }
+
+ .vote-btn:hover {
+ background: #667eea;
+ color: white;
+ border-color: #667eea;
+ }
+
+ .vote-btn.selected {
+ background: #667eea;
+ color: white;
+ border-color: #667eea;
+ }
+
+ /* PANTALLA DE RESULTADO */
+ .result-section {
+ text-align: center;
+ padding: 30px;
+ }
+
+ .result-title {
+ font-size: 2.5em;
+ font-weight: bold;
+ margin: 20px 0;
+ animation: pulse 1s infinite;
+ }
+
+ @keyframes pulse {
+ 0%, 100% {
+ transform: scale(1);
+ }
+ 50% {
+ transform: scale(1.05);
+ }
+ }
+
+ .win-message {
+ color: #27ae60;
+ font-size: 1.5em;
+ margin: 20px 0;
+ }
+
+ .loss-message {
+ color: #e74c3c;
+ font-size: 1.5em;
+ margin: 20px 0;
+ }
+
+ .share-section {
+ background: #f8f9fa;
+ padding: 20px;
+ border-radius: 8px;
+ margin: 20px 0;
+ }
+
+ .copy-btn {
+ width: 100%;
+ margin-top: 10px;
+ }
+
+ .copied {
+ color: #27ae60;
+ font-weight: bold;
+ margin-top: 10px;
+ }
+
+ @media (max-width: 600px) {
+ .container {
+ padding: 20px;
+ }
+
+ h1 {
+ font-size: 1.8em;
+ }
+
+ .button-group {
+ flex-direction: column;
+ }
+
+ button {
+ min-width: auto;
+ }
+ }
+
+ .error-message {
+ color: #e74c3c;
+ background: #fadbd8;
+ padding: 12px;
+ border-radius: 6px;
+ margin: 10px 0;
+ display: none;
+ }
+
+ .error-message.show {
+ display: block;
+ }
+
+ .btn-reveal {
+ width: 100%;
+ padding: 16px 24px;
+ margin: 20px 0;
+ background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+ color: white;
+ border: none;
+ border-radius: 8px;
+ font-size: 1.1em;
+ font-weight: 600;
+ cursor: pointer;
+ user-select: none;
+ transition: all 0.3s;
+ box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+ }
+
+ .btn-reveal:hover {
+ transform: translateY(-2px);
+ box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+ }
+
+ .btn-reveal:active {
+ transform: translateY(0);
+ box-shadow: 0 2px 10px rgba(245, 87, 108, 0.3);
+ }
+
+ @keyframes cardAppear {
+ 0% {
+ opacity: 0;
+ transform: scale(0.8) rotateX(90deg);
+ }
+ 100% {
+ opacity: 1;
+ transform: scale(1) rotateX(0deg);
+ }
+ }
+
+ .card-flip.new-player {
+ animation: cardAppear 0.6s ease-out;
+ }
+
+ @keyframes playerChange {
+ 0% {
+ opacity: 1;
+ }
+ 50% {
+ opacity: 0;
+ }
+ 100% {
+ opacity: 1;
+ }
+ }
+
+ .players-section.change-player {
+ animation: playerChange 0.4s ease-out;
+ }
+ </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎭 Impostor Filósofo</h1>
-        <p class="subtitle">¿Quién es el impostor entre los filósofos?</p>
+ <div class="container">
+ <h1>🎭 Impostor Filósofo</h1>
+ <p class="subtitle">¿Quién es el impostor entre los filósofos?</p>
 
-        <!-- PANTALLA 1: SETUP -->
-        <div id="setupScreen" class="screen active">
-            <div class="setup-section">
-                <label for="playerCount">Número de Jugadores</label>
-                <input type="number" id="playerCount" min="3" max="50" value="3">
-                <div id="errorMessage" class="error-message"></div>
-            </div>
+ <!-- PANTALLA 1: SETUP -->
+ <div id="setupScreen" class="screen active">
+ <div class="setup-section">
+ <label for="levelSelect">Nivel de Dificultad</label>
+ <select id="levelSelect" onchange="updatePlayerMax()">
+ <option value="1">Nivel 1 - 1 Impostor (Máx 10)</option>
+ <option value="2">Nivel 2 - 2 Impostores (Máx 15)</option>
+ <option value="3">Nivel 3 - 3 Impostores (Máx 25)</option>
+ </select>
 
-            <div class="button-group">
-                <button class="btn-primary" onclick="startGame()">Iniciar Juego</button>
-                <button class="btn-secondary" onclick="downloadGame()">⬇️ Descargar Juego</button>
-            </div>
-        </div>
+ <label for="playerCount">Número de Jugadores</label>
+ <input type="number" id="playerCount" min="3" max="10" value="3">
+ <div id="errorMessage" class="error-message"></div>
 
-        <!-- PANTALLA 2: JUGADOR -->
-        <div id="playerScreen" class="screen">
-            <div class="players-section">
-                <p style="font-size: 1.3em; margin-bottom: 20px;">
-                    <strong>Jugador <span id="currentPlayer">1</span></strong> - Tu rol:
-                </p>
+ <div id="namesSection" style="display: none; margin-top: 20px;">
+ <label>Nombres de los Jugadores</label>
+ <div id="namesContainer"></div>
+ </div>
+ </div>
 
-                <div id="roleReveal" class="role-reveal">
-                    <div class="card-flip">
-                        <div class="card-face card-front">
-                            ? ? ?
-                        </div>
-                        <div class="card-face card-back" id="cardBack">
-                            <div class="role-label">Tu palabra es:</div>
-                            <div class="role-content" id="wordDisplay"></div>
-                        </div>
-                    </div>
-                </div>
+ <div class="button-group">
+ <button class="btn-primary" id="setupBtn" onclick="setupNames()">Configurar Nombres</button>
+ </div>
+ </div>
 
-                <button class="btn-reveal" id="revealBtn" onmousedown="flipCard(true)" onmouseup="flipCard(false)" ontouchstart="flipCard(true)" ontouchend="flipCard(false)">
-                    Mantén presionado para ver tu rol
-                </button>
+ <!-- PANTALLA 2: JUGADOR -->
+ <div id="playerScreen" class="screen">
+ <div class="players-section">
+ <p style="font-size: 1.3em; margin-bottom: 20px;">
+ <strong><span id="currentPlayerName">Jugador 1</span></strong> - OHH ¡Es tu turno!:
+ </p>
 
-                <div class="info-box">
-                    <strong>💡 Si eres el IMPOSTOR:</strong> No sabes la palabra, solo haz preguntas inteligentes para confundir.<br>
-                    <strong>💭 Si eres FILÓSOFO:</strong> Defiende tu palabra sin revelarla directamente.
-                </div>
+ <div id="roleReveal" class="role-reveal">
+ <div class="card-flip">
+ <div class="card-face card-front">
+ ? ? ?
+ </div>
+ <div class="card-face card-back" id="cardBack">
+ <div class="role-label">Tu palabra es:</div>
+ <div class="role-content" id="wordDisplay"></div>
+ </div>
+ </div>
+ </div>
 
-                <div class="timer">
-                    ⏱️ <span id="playerTimer">60</span>s
-                </div>
+ <button class="btn-reveal" id="revealBtn" onmousedown="flipCard(true)" onmouseup="flipCard(false)" ontouchstart="flipCard(true)" ontouchend="flipCard(false)">
+ Mantén presionado 
+ </button>
 
-                <div class="button-group">
-                    <button class="btn-primary" onclick="nextPlayer()">Siguiente Jugador</button>
-                    <button class="btn-secondary" onclick="goToVoting()">Ir a Votación</button>
-                </div>
-            </div>
-        </div>
+ <div class="info-box">
+ <strong> IMPOSTOR:</strong> No sabes la palabra, solo haz preguntas inteligentes para confundir.
+    <br><br>
+ <strong> FILÓSOFO:</strong> Defiende tu palabra sin revelarla directamente.
+ </div>
 
-        <!-- PANTALLA 3: VOTACIÓN -->
-        <div id="votingScreen" class="screen">
-            <div class="vote-section">
-                <h2 style="text-align: center; margin: 20px 0;">Ronda de Votación 🗳️</h2>
-                <p style="text-align: center; color: #666; margin-bottom: 20px;">
-                    Vota por el jugador que crees que es el impostor
-                </p>
 
-                <div class="vote-buttons" id="voteButtonsContainer"></div>
 
-                <button class="btn-primary" onclick="submitVote()" style="width: 100%; margin-top: 20px;">
-                    Confirmar Voto
-                </button>
-            </div>
-        </div>
+ <div class="button-group">
+ <button class="btn-primary" onclick="nextPlayer()">Siguiente Jugador</button>
+ <button class="btn-secondary" onclick="goToVoting()">Ir a Votación</button>
+ </div>
+ </div>
+ </div>
 
-        <!-- PANTALLA 4: RESULTADO -->
-        <div id="resultScreen" class="screen">
-            <div class="result-section">
-                <div class="result-title" id="resultTitle"></div>
-                <div id="resultMessage"></div>
+ <!-- PANTALLA 3: VOTACIÓN -->
+ <div id="votingScreen" class="screen">
+ <div class="vote-section">
+ <h2 style="text-align: center; margin: 20px 0;">Ronda de Votación 🗳️</h2>
+ <p style="text-align: center; color: #ff0000; margin-bottom: 30px;">
+ Vota por el jugador que crees que es el impostor
+ </p>
 
-                <div class="info-box">
-                    <strong>🎉 El impostor era: Jugador <span id="impostorNumber"></span></strong><br>
-                    Palabra: <strong><span id="revealedWord"></span></strong>
-                </div>
+ <div class="vote-buttons" id="voteButtonsContainer"></div>
 
-                <div class="share-section">
-                    <strong>📤 Compartir con amigos:</strong>
-                    <button class="btn-secondary copy-btn" onclick="shareGame()">
-                        📋 Copiar Link para Compartir
-                    </button>
-                    <div id="copyMessage" class="copied" style="display: none;">
-                        ¡Link copiado al portapapeles!
-                    </div>
-                </div>
+ <button class="btn-primary" onclick="submitVote()" style="width: 100%; margin-top: 20px;">
+ Confirmar Voto
+ </button>
+ </div>
+ </div>
 
-                <div class="button-group">
-                    <button class="btn-primary" onclick="resetGame()">Jugar de Nuevo</button>
-                    <button class="btn-secondary" onclick="downloadGame()">⬇️ Descargar Juego</button>
-                </div>
-            </div>
-        </div>
-    </div>
+ <!-- PANTALLA 4: RESULTADO -->
+ <div id="resultScreen" class="screen">
+ <div class="result-section">
+ <div class="result-title" id="resultTitle"></div>
+ <div id="resultMessage"></div>
 
-    <script>
-        // Palabras filosóficas
-        const filosoficWords = [
-            "EXISTENCIALISMO",
-            "ONTOLOGÍA",
-            "EPISTEMOLOGÍA",
-            "METAFÍSICA",
-            "DUALISMO",
-            "MONISMO",
-            "RELATIVISMO",
-            "ABSOLUTISMO",
-            "LIBRE ALBEDRÍO",
-            "DETERMINISMO",
-            "HEDONISMO",
-            "ESTOICISMO",
-            "NIHILISMO",
-            "PRAGMATISMO",
-            "IDEALISMO",
-            "MATERIALISMO",
-            "FENOMENOLOGÍA",
-            "HERMENÉUTICA",
-            "DIALÉCTICA",
-            "LÓGICA",
-            "ÉTICA",
-            "ESTÉTICA",
-            "VOLUNTAD",
-            "RAZÓN",
-            "INTUICIÓN",
-            "PERCEPCIÓN",
-            "VERDAD",
-            "BIEN",
-            "BELLEZA",
-            "JUSTICIA"
-        ];
+ <div class="info-box">
+ <strong>🎉 Los impostores eran: <span id="impostorNumber"></span></strong><br><br>
 
-        let gameState = {
-            totalPlayers: 0,
-            currentPlayer: 0,
-            impostorPlayer: 0,
-            roles: [], // Array de palabras
-            votes: {}, // {jugador: votoPor}
-            selectedVote: null
-        };
+ La palabra que tenían los demás jugadores era: <strong><span id="revealedWord"></span></strong>
+ </div>
 
-        let timerInterval = null;
+ <div class="share-section">
+ <strong>Hecho por Yuian V. Mateo N.</strong>
+ <button class="btn-secondary copy-btn" onclick="shareGame()">
+ 📋 Copiar Link para Compartir
+ </button>
+ <div id="copyMessage" class="copied" style="display: none;">
+ ¡Link copiado al portapapeles!
+ </div>
+ </div>
 
-        function flipCard(isPressed) {
-            const roleReveal = document.getElementById('roleReveal');
-            if (isPressed) {
-                roleReveal.classList.add('flipped');
-            } else {
-                roleReveal.classList.remove('flipped');
-            }
-        }
+ <div class="button-group">
+ <button class="btn-primary" onclick="resetGame()">Jugar de Nuevo</button>
+ <button class="btn-secondary" onclick="exitGame()">Salir del Juego</button>
+ </div>
+ </div>
+ </div>
+ </div>
 
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
+ <script>
+ // Palabras filosóficas
+ const filosoficWords = [
+ "EXISTENCIALISMO",
+ "ONTOLOGÍA",
+ "EPISTEMOLOGÍA",
+ "METAFÍSICA",
+ "DUALISMO",
+ "MONISMO",
+ "RELATIVISMO",
+ "ABSOLUTISMO",
+ "LIBRE ALBEDRÍO",
+ "DETERMINISMO",
+ "HEDONISMO",
+ "ESTOICISMO",
+ "NIHILISMO",
+ "PRAGMATISMO",
+ "IDEALISMO",
+ "MATERIALISMO",
+ "FENOMENOLOGÍA",
+ "HERMENÉUTICA",
+ "DIALÉCTICA",
+ "LÓGICA",
+ "ÉTICA",
+ "ESTÉTICA",
+ "VOLUNTAD",
+ "RAZÓN",
+ "INTUICIÓN",
+ "PERCEPCIÓN",
+ "VERDAD",
+ "BIEN",
+ "BELLEZA",
+ "JUSTICIA",
+ 
+"EMPIRISMO",
+"RACIONALISMO",
+"ESCEPTICISMO",
+"CRITICISMO",
+"POSITIVISMO",
+"UTILITARISMO",
+"DEONTOLOGÍA",
+"TELEOLOGÍA",
+"AXIOLOGÍA",
+"GNOSOLOGÍA",
+"SOFISMO",
+"SILOGISMO",
+"CAUSALIDAD",
+"SUBJETIVISMO",
+"OBJETIVISMO",
+"TRANSCENDENTALISMO",
+"CONSTRUCTIVISMO",
+"REALISMO",
+"ANTROPOLOGÍA FILOSÓFICA",
+"FILOSOFÍA POLÍTICA",
+"ANALITICISMO",
+"FILOSOFÍA DEL LENGUAJE",
+"FILOSOFÍA DE LA MENTE",
+"FILOSOFÍA DE LA CIENCIA",
+"NEOPLATONISMO",
+"ESCOLÁSTICA",
+"PATRÍSTICA",
+"ILUSTRACIÓN",
+"ROMANTICISMO",
+"VITALISMO",
+"PANENTEÍSMO",
+"PANTEÍSMO",
+"TEÍSMO",
+"ATEÍSMO",
+"AGNOSTICISMO",
+"CONSECUENCIALISMO",
+"EMOTIVISMO",
+"INTENCIONALIDAD",
+"ALTERIDAD",
+"INMANENCIA",
+"TRASCENDENCIA"
 
-        function startGame() {
-            const playerCount = parseInt(document.getElementById('playerCount').value);
-            const errorEl = document.getElementById('errorMessage');
+ ];
 
-            if (isNaN(playerCount) || playerCount < 3) {
-                errorEl.textContent = '❌ Mínimo de jugadores es 3';
-                errorEl.classList.add('show');
-                return;
-            }
+ let gameState = {
+ totalPlayers: 0,
+ currentPlayer: 0,
+ impostors: [], // Array de números de impostores
+ roles: [], // Array de palabras
+ votes: {}, // {jugador: votoPor}
+ selectedVote: null,
+ playerNames: [],
+ filosoficWord: ''
+ };
 
-            if (playerCount > 50) {
-                errorEl.textContent = '❌ Máximo de jugadores es 50';
-                errorEl.classList.add('show');
-                return;
-            }
+ let timerInterval = null;
 
-            errorEl.classList.remove('show');
+ function updatePlayerMax() {
+ const level = parseInt(document.getElementById('levelSelect').value);
+ const playerInput = document.getElementById('playerCount');
+ if (level === 1) {
+ playerInput.max = 10;
+ playerInput.value = Math.min(parseInt(playerInput.value) || 3, 10);
+ } else if (level === 2) {
+ playerInput.max = 15;
+ playerInput.value = Math.min(parseInt(playerInput.value) || 3, 15);
+ } else if (level === 3) {
+ playerInput.max = 25;
+ playerInput.value = Math.min(parseInt(playerInput.value) || 3, 25);
+ }
+ }
 
-            gameState.totalPlayers = playerCount;
-            gameState.impostorPlayer = Math.floor(Math.random() * playerCount) + 1;
-            
-            // Seleccionar UNA palabra para todos los filósofos
-            const randomIndex = Math.floor(Math.random() * filosoficWords.length);
-            const filosoficWord = filosoficWords[randomIndex];
-            
-            // Crear array de roles
-            gameState.roles = [];
-            for (let i = 1; i <= playerCount; i++) {
-                if (i === gameState.impostorPlayer) {
-                    gameState.roles.push('IMPOSTOR');
-                } else {
-                    // Todos los filósofos tienen la misma palabra
-                    gameState.roles.push(filosoficWord);
-                }
-            }
+ // Llamar al inicio para setear default
+ updatePlayerMax();
 
-            gameState.currentPlayer = 1;
-            showPlayerRole();
-        }
+ function flipCard(isPressed) {
+ const roleReveal = document.getElementById('roleReveal');
+ if (isPressed) {
+ roleReveal.classList.add('flipped');
+ } else {
+ roleReveal.classList.remove('flipped');
+ }
+ }
 
-        function showPlayerRole() {
-            const playerNum = gameState.currentPlayer;
-            const role = gameState.roles[playerNum - 1];
+ function showScreen(screenId) {
+ document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+ document.getElementById(screenId).classList.add('active');
+ }
 
-            document.getElementById('currentPlayer').textContent = playerNum;
+ function startGame() {
+ const playerCount = parseInt(document.getElementById('playerCount').value);
+ const level = parseInt(document.getElementById('levelSelect').value);
+ const errorEl = document.getElementById('errorMessage');
+ const maxPlayers = level === 1 ? 10 : level === 2 ? 15 : 25;
+ const numImpostors = level;
 
-            const roleReveal = document.getElementById('roleReveal');
-            const playersSection = document.querySelector('.players-section');
-            const cardFlip = document.querySelector('.card-flip');
-            const cardBack = document.getElementById('cardBack');
-            const wordDisplay = document.getElementById('wordDisplay');
+ if (isNaN(playerCount) || playerCount < 3) {
+ errorEl.textContent = ' Mínimo de jugadores es 3';
+ errorEl.classList.add('show')
+ return;
+ }
 
-            // Resetear el cartel a estado inicial (no girado)
-            roleReveal.classList.remove('flipped');
+ if (playerCount > maxPlayers) {
+ errorEl.textContent = ` Máximo de jugadores para este nivel es ${maxPlayers}`;
+ errorEl.classList.add('show');
+ return;
+ }
 
-            // Añadir animación de cambio
-            playersSection.classList.remove('change-player');
-            void playersSection.offsetWidth; // Trigger reflow
-            playersSection.classList.add('change-player');
+ errorEl.classList.remove('show');
 
-            // Añadir animación al cartel
-            cardFlip.classList.remove('new-player');
-            void cardFlip.offsetWidth; // Trigger reflow
-            cardFlip.classList.add('new-player');
+ gameState.playerNames = [];
+ for (let i = 1; i <= playerCount; i++) {
+ const nameInput = document.getElementById(`playerName${i}`);
+ const name = nameInput ? nameInput.value.trim() : '';
+ gameState.playerNames.push(name || `Jugador ${i}`);
+ }
 
-            if (role === 'IMPOSTOR') {
-                cardBack.className = 'card-face card-back impostor';
-                wordDisplay.textContent = '❓ IMPOSTOR ❓';
-                wordDisplay.style.color = '#ffffff';
-            } else {
-                cardBack.className = 'card-face card-back';
-                wordDisplay.textContent = role;
-                wordDisplay.style.color = '#ffffff';
-            }
+ gameState.totalPlayers = playerCount;
+ 
+ // Seleccionar UNA palabra para todos los filósofos
+ const randomIndex = Math.floor(Math.random() * filosoficWords.length);
+ const filosoficWord = filosoficWords[randomIndex];
+ 
+ gameState.filosoficWord = filosoficWord;
+ 
+ // Generar impostores
+ gameState.impostors = [];
+ let availablePlayers = Array.from({length: playerCount}, (_, i) => i+1);
+ for (let i = 0; i < numImpostors; i++) {
+ const randomIndex = Math.floor(Math.random() * availablePlayers.length);
+ const impostor = availablePlayers.splice(randomIndex, 1)[0];
+ gameState.impostors.push(impostor);
+ }
+ 
+ // Crear array de roles
+ gameState.roles = [];
+ for (let i = 1; i <= playerCount; i++) {
+ if (gameState.impostors.includes(i)) {
+ gameState.roles.push('IMPOSTOR');
+ } else {
+ gameState.roles.push(filosoficWord);
+ }
+ }
 
-            startTimer();
-            showScreen('playerScreen');
-        }
+ gameState.currentPlayer = 1;
+ showPlayerRole();
+ }
 
-        function startTimer() {
-            clearInterval(timerInterval);
-            let timeLeft = 60;
-            document.getElementById('playerTimer').textContent = timeLeft;
+ function showPlayerRole() {
+ const playerNum = gameState.currentPlayer;
+ const role = gameState.roles[playerNum - 1];
 
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('playerTimer').textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    nextPlayer();
-                }
-            }, 1000);
-        }
+ document.getElementById('currentPlayerName').textContent = gameState.playerNames[playerNum - 1];
 
-        function nextPlayer() {
-            clearInterval(timerInterval);
-            gameState.currentPlayer++;
-            
-            if (gameState.currentPlayer <= gameState.totalPlayers) {
-                showPlayerRole();
-            } else {
-                goToVoting();
-            }
-        }
+ const roleReveal = document.getElementById('roleReveal');
+ const playersSection = document.querySelector('.players-section');
+ const cardFlip = document.querySelector('.card-flip');
+ const cardBack = document.getElementById('cardBack');
+ const wordDisplay = document.getElementById('wordDisplay');
 
-        function goToVoting() {
-            clearInterval(timerInterval);
-            
-            // Crear botones de votación
-            const voteContainer = document.getElementById('voteButtonsContainer');
-            voteContainer.innerHTML = '';
+ // Resetear el cartel a estado inicial (no girado)
+ roleReveal.classList.remove('flipped');
 
-            for (let i = 1; i <= gameState.totalPlayers; i++) {
-                const btn = document.createElement('button');
-                btn.className = 'vote-btn';
-                btn.textContent = `Jugador ${i}`;
-                btn.onclick = () => selectVote(i, btn);
-                voteContainer.appendChild(btn);
-            }
+ // Añadir animación de cambio
+ playersSection.classList.remove('change-player');
+ void playersSection.offsetWidth; // Trigger reflow
+ playersSection.classList.add('change-player');
 
-            showScreen('votingScreen');
-        }
+ // Añadir animación al cartel
+ cardFlip.classList.remove('new-player');
+ void cardFlip.offsetWidth; // Trigger reflow
+ cardFlip.classList.add('new-player');
 
-        function selectVote(playerNum, btnElement) {
-            document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
-            btnElement.classList.add('selected');
-            gameState.selectedVote = playerNum;
-        }
+ if (role === 'IMPOSTOR') {
+ cardBack.className = 'card-face card-back impostor';
+ wordDisplay.textContent = '❌ IMPOSTOR ❌';
+ wordDisplay.style.color = '#e74c3c';
+ } else {
+ cardBack.className = 'card-face card-back';
+ wordDisplay.textContent = role;
+ wordDisplay.style.color = '#ffffff';
+ }
 
-        function submitVote() {
-            if (gameState.selectedVote === null) {
-                alert('Por favor selecciona un jugador');
-                return;
-            }
+ startTimer();
+ showScreen('playerScreen');
+ }
 
-            showResults();
-        }
+ function startTimer() {
+ clearInterval(timerInterval);
+ let timeLeft = 60;
+ document.getElementById('playerTimer').textContent = timeLeft;
 
-        function showResults() {
-            const resultTitle = document.getElementById('resultTitle');
-            const resultMessage = document.getElementById('resultMessage');
-            const impostorNumber = document.getElementById('impostorNumber');
-            const revealedWord = document.getElementById('revealedWord');
+ timerInterval = setInterval(() => {
+ timeLeft--;
+ document.getElementById('playerTimer').textContent = timeLeft;
+ if (timeLeft <= 0) {
+ clearInterval(timerInterval);
+ nextPlayer();
+ }
+ }, 1000);
+ }
 
-            impostorNumber.textContent = gameState.impostorPlayer;
-            revealedWord.textContent = gameState.roles[gameState.impostorPlayer - 1];
+ function nextPlayer() {
+ clearInterval(timerInterval);
+ gameState.currentPlayer++;
+ 
+ if (gameState.currentPlayer <= gameState.totalPlayers) {
+ showPlayerRole();
+ } else {
+ goToVoting();
+ }
+ }
 
-            if (gameState.selectedVote === gameState.impostorPlayer) {
-                resultTitle.textContent = '✅ ¡GANASTE! ✅';
-                resultMessage.innerHTML = `<div class="win-message">🎉 ¡Encontraste al impostor!<br>Jugador ${gameState.selectedVote} fue eliminado correctamente</div>`;
-            } else {
-                resultTitle.textContent = '❌ PERDISTE ❌';
-                resultMessage.innerHTML = `<div class="loss-message">😢 Votaste por Jugador ${gameState.selectedVote}, pero era inocente<br>El impostor era el Jugador ${gameState.impostorPlayer}</div>`;
-            }
+ function goToVoting() {
+ clearInterval(timerInterval);
+ 
+ // Crear botones de votación
+ const voteContainer = document.getElementById('voteButtonsContainer');
+ voteContainer.innerHTML = '';
 
-            showScreen('resultScreen');
-        }
+ for (let i = 1; i <= gameState.totalPlayers; i++) {
+ const btn = document.createElement('button');
+ btn.className = 'vote-btn';
+ btn.textContent = gameState.playerNames[i - 1];
+ btn.onclick = () => selectVote(i, btn);
+ voteContainer.appendChild(btn);
+ }
 
-        function resetGame() {
-            document.getElementById('playerCount').value = '3';
-            document.getElementById('errorMessage').classList.remove('show');
-            gameState = {
-                totalPlayers: 0,
-                currentPlayer: 0,
-                impostorPlayer: 0,
-                roles: [],
-                votes: {},
-                selectedVote: null
-            };
-            showScreen('setupScreen');
-        }
+ showScreen('votingScreen');
+ }
 
-        function downloadGame() {
-            const element = document.documentElement.outerHTML;
-            const blob = new Blob([element], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'ImpostorFilosofo.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+ function selectVote(playerNum, btnElement) {
+ document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
+ btnElement.classList.add('selected');
+ gameState.selectedVote = playerNum;
+ }
 
-        function shareGame() {
-            const gameUrl = window.location.href;
-            const shareText = `📘 ¡Juguemos Impostor Filósofo! 🎭\n¿Crees que puedes encontrar al impostor entre los filósofos?\n${gameUrl}`;
-            
-            navigator.clipboard.writeText(shareText).then(() => {
-                const copyMsg = document.getElementById('copyMessage');
-                copyMsg.style.display = 'block';
-                setTimeout(() => {
-                    copyMsg.style.display = 'none';
-                }, 3000);
-            });
-        }
-    </script>
+ function submitVote() {
+ if (gameState.selectedVote === null) {
+ alert('Por favor selecciona un jugador');
+ return;
+ }
+
+ showResults();
+ }
+
+ function showResults() {
+ const resultTitle = document.getElementById('resultTitle');
+ const resultMessage = document.getElementById('resultMessage');
+ const impostorNumber = document.getElementById('impostorNumber');
+ const revealedWord = document.getElementById('revealedWord');
+
+ impostorNumber.textContent = gameState.impostors.map(i => gameState.playerNames[i-1]).join(', ');
+ revealedWord.textContent = gameState.filosoficWord;
+
+ if (gameState.impostors.includes(gameState.selectedVote)) {
+ resultTitle.textContent = '✅ ¡GANASTE! ✅';
+ resultMessage.innerHTML = `<div class="win-message">🎉 ¡Encontraste a un impostor!<br>${gameState.playerNames[gameState.selectedVote - 1]} fue eliminado correctamente</div>`;
+ } else {
+ resultTitle.textContent = '❌ PERDISTE ❌';
+ resultMessage.innerHTML = `<div class="loss-message">😢 Votaste por ${gameState.playerNames[gameState.selectedVote - 1]}, pero era inocente<br>Los impostores eran ${gameState.impostors.map(i => gameState.playerNames[i-1]).join(', ')}</div>`;
+ }
+
+ showScreen('resultScreen');
+ }
+
+ function resetGame() {
+ document.getElementById('playerCount').value = '3';
+ document.getElementById('levelSelect').value = '1';
+ updatePlayerMax();
+ document.getElementById('errorMessage').classList.remove('show');
+ gameState = {
+ totalPlayers: 0,
+ currentPlayer: 0,
+ impostors: [],
+ roles: [],
+ votes: {},
+ selectedVote: null,
+ playerNames: [],
+ filosoficWord: ''
+ };
+ showScreen('setupScreen');
+ }
+
+ function downloadGame() {
+ const element = document.documentElement.outerHTML;
+ const blob = new Blob([element], { type: 'text/html' });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = 'ImpostorFilosofo.html';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+ }
+
+ function rateGame() {
+ alert('¡Gracias por calificar! ⭐⭐⭐⭐⭐\nSi quieres dejar una reseña, busca "Impostor Filósofo" en tu plataforma favorita.');
+ }
+
+ function exitGame() {
+ if (confirm('¿Estás seguro de que quieres salir del juego?')) {
+ window.close();
+ }
+ }
+
+ function shareGame() {
+ const gameUrl = window.location.href;
+ const shareText = `📘 ¡Juguemos Impostor Filósofo! 🎭\n¿Crees que puedes encontrar al impostor entre los filósofos?\n${gameUrl}`;
+ 
+ navigator.clipboard.writeText(shareText).then(() => {
+ const copyMsg = document.getElementById('copyMessage');
+ copyMsg.style.display = 'block';
+ setTimeout(() => {
+ copyMsg.style.display = 'none';
+ }, 3000);
+ });
+ }
+ function setupNames() {
+ const playerCount = parseInt(document.getElementById('playerCount').value);
+ const level = parseInt(document.getElementById('levelSelect').value);
+ const errorEl = document.getElementById('errorMessage');
+ const maxPlayers = level === 1 ? 10 : level === 2 ? 15 : 25;
+
+ if (isNaN(playerCount) || playerCount < 3) {
+ errorEl.textContent = '❌ Mínimo de jugadores es 3';
+ errorEl.classList.add('show');
+ return;
+ }
+
+ if (playerCount > maxPlayers) {
+ errorEl.textContent = `❌ Máximo de jugadores para este nivel es ${maxPlayers}`;
+ errorEl.classList.add('show');
+ return;
+ }
+
+ errorEl.classList.remove('show');
+
+ const namesContainer = document.getElementById('namesContainer');
+ namesContainer.innerHTML = '';
+
+ for (let i = 1; i <= playerCount; i++) {
+ const input = document.createElement('input');
+ input.type = 'text';
+ input.placeholder = `Nombre del Jugador ${i}`;
+ input.id = `playerName${i}`;
+ input.style.margin = '5px 0';
+ input.style.width = '100%';
+ input.style.padding = '8px';
+ input.style.border = '2px solid #ddd';
+ input.style.borderRadius = '8px';
+ namesContainer.appendChild(input);
+ }
+
+ document.getElementById('namesSection').style.display = 'block';
+ document.getElementById('setupBtn').textContent = 'Iniciar Juego';
+ document.getElementById('setupBtn').onclick = startGame;
+ } </script>
 </body>
 </html>
-
-
-
-
